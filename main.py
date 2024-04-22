@@ -5,11 +5,11 @@ import time
 serial_port = 'COM10'
 baud_rate = 115200
 
-# Initialize the serial connection
+# Initialize the serial connection, COM port or also TCP IP
 print("Connecting to Beamformer")
 beamformer = serial.Serial(serial_port, baud_rate)
 print("Beamformer connected !")
-time.sleep(2)
+time.sleep(5)
 
 
 def beamformer_write(command, include_newline=True, sleep_time=0.05):
@@ -29,7 +29,9 @@ def beamformer_write(command, include_newline=True, sleep_time=0.05):
 
     # Read the response from the Arduino
     beamformer_response = beamformer.read_all().decode()
-
+    print("---debug START")
+    print(beamformer_response)
+    print("---debug END")
     # Return the response
     if str(beamformer_response.split('\r\n')[1]) == "OK":
         return beamformer_response.strip()  # Strip leading/trailing whitespaces, '\r', and '\n'
@@ -44,6 +46,15 @@ def beamformer_get_num_boards():
     else:
         num_boards_bf = int(get_num_boards.split('\r\n')[-1])  # Extract the last element after splitting by '\r\n'
         return num_boards_bf
+
+
+def LED_demo_board(board_id):
+    cmd_temp = "LED_demo_board(" + str(board_id) + ")"
+    cmd_sent = beamformer_write(cmd_temp, sleep_time=1)
+    if cmd_sent == "Error":
+        return "Error"
+    else:
+        return
 
 
 def beamformer_set_num_boards(num_boards_to_set):
@@ -73,7 +84,6 @@ def beamformer_set_beams_enumeration(beams_enumeration):
 
     # Concatenate the elements with commas and format the command
     cmd_temp = "configureBeamSizes(" + ", ".join(beams_enumeration_str) + ")"
-    print("---cmd_tmp:", cmd_temp)
     cmd_sent = beamformer_write(cmd_temp)
     if cmd_sent == "Error":
         return "Error"
@@ -81,9 +91,17 @@ def beamformer_set_beams_enumeration(beams_enumeration):
         return
 
 
+LED_demo_board(0)
+
+# dumb functions:
+"""
+print(beamformer_write("info"))
+beamformer_write("LED_demo", sleep_time=5)
+beamformer_write("LED_on", sleep_time=1)
+beamformer_write("LED_off", sleep_time=0.25)
+
 beams_enumeration = [2, 2, 2, 2, 4, 4, 8, 2]
 beamformer_set_beams_enumeration(beams_enumeration)
-
 beam_number, beam_sizes = beamformer_get_beams_enumeration()
 print("Beam number:", beam_number)
 print("Beam sizes:", beam_sizes)
@@ -93,9 +111,6 @@ num_boards = beamformer_get_num_boards()
 print("Number of boards:", num_boards)
 beamformer_set_num_boards(4)
 
-# print(beamformer_write("print_beam_list", sleep_time=0.1))
-print(beamformer_write('info'))
-# beamformer_write('LED_demo')
-
-# beamformer.write(b'num_boards({})\n'.format(num_boards))
+# print(beamformer_write("print_beam_list", sleep_time=0.25))
+"""
 beamformer.close()

@@ -3,10 +3,10 @@ import matplotlib.pyplot as plt
 
 # Element numbers
 N = 4
-# Element spacing
+# Element spacing (lambda)
 d = 0.5
 # Phase shift in degrees
-phase_deg = 32
+phase_deg = 0
 
 # Initialization of the parameters
 An = 1

@@ -12,7 +12,7 @@ print("Beamformer connected !")
 time.sleep(2.5)
 
 
-def beamformer_write(command, include_newline=True, sleep_time=0.05):
+def beamformer_write(command, include_newline=True, sleep_time=0.050):
     # Encode command to bytes if it's a string
     if isinstance(command, str):
         command = command.encode()
@@ -95,6 +95,16 @@ def beamformer_set_beams_enumeration(beams_enumeration):
 
 def set_beam(beamID, d_mm, freq_MHz, angle_deg):
     cmd_temp = "configureBeam(" + str(beamID) + ", " + str(d_mm) + ", " + str(freq_MHz) + ", " + str(angle_deg) + ")"
+    cmd_sent = beamformer_write(cmd_temp, sleep_time=0.1)
+    if cmd_sent == "Error":
+        return "Error"
+    else:
+        return
+
+
+def set_2d_beam(beamID, d_m, num_x, num_y, freq_MHz, elevation_angle, azimuth_angle):
+    cmd_temp = "configureBeam(" + str(beamID) + ", " + str(d_m) + ", " + str(num_x) + ", " + str(num_y) + ", " + str(
+        freq_MHz) + ", " + str(elevation_angle) + ", " + str(azimuth_angle) + ", " + ")"
     cmd_sent = beamformer_write(cmd_temp, sleep_time=0.1)
     if cmd_sent == "Error":
         return "Error"

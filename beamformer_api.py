@@ -3,10 +3,11 @@ import time
 
 
 class BeamformerAPI:
-    def __init__(self, serial_port='COM10', baud_rate=115200, timeout=2):
+    def __init__(self, serial_port='COM10', baud_rate=115200, timeout=2, read_timeout=1):
         self.serial_port = serial_port
         self.baud_rate = baud_rate
         self.timeout = timeout
+        self.read_timeout = read_timeout
         self.beamformer = None
 
     def connect(self):
@@ -24,6 +25,12 @@ class BeamformerAPI:
             self.beamformer.close()
             print("Beamformer connection closed.")
 
+    def check_connection(self):
+        if not self.beamformer or not self.beamformer.is_open:
+            print("Beamformer not connected.")
+            return False
+        return True
+
     def beamformer_write(self, command, include_newline=True, sleep_time=0.050):
         if not self.beamformer:
             print("Error: Beamformer not connected.")
@@ -39,8 +46,14 @@ class BeamformerAPI:
             self.beamformer.write(command)
             time.sleep(sleep_time)
             response = self.beamformer.read_all().decode()
+        except serial.SerialTimeoutException:
+            print("Serial timeout error during communication.")
+            return "Error"
         except serial.SerialException as e:
             print(f"Serial communication error: {e}")
+            return "Error"
+        except Exception as e:
+            print(f"Unexpected error: {e}")
             return "Error"
 
         if "OK" in response.split('\r\n'):
@@ -49,10 +62,14 @@ class BeamformerAPI:
             return "Error"
 
     def LED_demo_board(self, board_id):
+        if not self.check_connection():
+            return "Error, not connected"
         cmd_temp = f"LED_demo_board({board_id})"
         return self.beamformer_write(cmd_temp, sleep_time=1)
 
     def beamformer_get_num_boards(self):
+        if not self.check_connection():
+            return "Error, not connected"
         response = self.beamformer_write("get_num_boards")
         if response == "Error":
             return "Error"
@@ -63,6 +80,8 @@ class BeamformerAPI:
             return "Error"
 
     def beamformer_set_num_boards(self, num_boards_to_set):
+        if not self.check_connection():
+            return "Error, not connected"
         cmd_temp = f"set_num_boards({num_boards_to_set})"
         response = self.beamformer_write(cmd_temp)
         if "Invalid number of boards" in response:
@@ -71,6 +90,8 @@ class BeamformerAPI:
         return response
 
     def beamformer_init(self):
+        if not self.check_connection():
+            return "Error, not connected"
         response = self.beamformer_write("set_beamformer_init")
         if "Error" in response:
             print("Something went wrong, please check connection.")
@@ -78,6 +99,8 @@ class BeamformerAPI:
         return response
 
     def beamformer_get_beams_enumeration(self):
+        if not self.check_connection():
+            return "Error, not connected"
         response = self.beamformer_write("get_beamlist_param")
         if response == "Error":
             return "Error"
@@ -90,12 +113,16 @@ class BeamformerAPI:
             return "Error"
 
     def beamformer_set_beams_enumeration(self, beams_enumeration):
+        if not self.check_connection():
+            return "Error, not connected"
         beams_enumeration_str = [str(size) for size in beams_enumeration]
         cmd_temp = f"configureBeamSizes({', '.join(beams_enumeration_str)})"
         return self.beamformer_write(cmd_temp)
 
 
     def beamformer_beams_init(self):
+        if not self.check_connection():
+            return "Error, not connected"
         response = self.beamformer_write("set_beamlist_init")
         if "Error" in response:
             print("Something went wrong, please check connection.")
@@ -103,11 +130,13 @@ class BeamformerAPI:
         return response
 
     def set_beam(self, beamID, d_mm, freq_MHz, angle_deg):
+        if not self.check_connection():
+            return "Error, not connected"
         cmd_temp = f"configureBeam({beamID}, {d_mm}, {freq_MHz}, {angle_deg})"
         return self.beamformer_write(cmd_temp, sleep_time=0.1)
 
     def set_2d_beam(self, beamID, d_m, num_x, num_y, freq_MHz, elevation_angle, azimuth_angle):
-        cmd_temp = f"configureBeam({beamID}, {d_m}, {num_x}, {num_y}, {freq_MHz}, {elevation_angle}, {azimuth_angle})"
+        if not self.check_connection():
+            return "Error, not connected"
+        cmd_temp = f"set_2d_beam({beamID}, {d_m}, {num_x}, {num_y}, {freq_MHz}, {elevation_angle}, {azimuth_angle})"
         return self.beamformer_write(cmd_temp, sleep_time=0.1)
-
-# The class `BeamformerAPI` is now ready to be imported and used in other scripts.

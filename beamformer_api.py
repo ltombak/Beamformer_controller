@@ -3,27 +3,41 @@ import time
 
 
 class BeamformerAPI:
-    def __init__(self, serial_port='COM10', baud_rate=115200, timeout=2, read_timeout=1):
+    def __init__(self, serial_port=None, baud_rate=115200, timeout=2, read_timeout=1, tcp_host=None, tcp_port=None):
         self.serial_port = serial_port
         self.baud_rate = baud_rate
         self.timeout = timeout
         self.read_timeout = read_timeout
+        self.tcp_host = tcp_host
+        self.tcp_port = tcp_port
         self.beamformer = None
 
     def connect(self):
         try:
-            print("Connecting to Beamformer...")
-            self.beamformer = serial.Serial(self.serial_port, self.baud_rate, timeout=self.timeout)
+            if self.serial_port:
+                print("Connecting to Beamformer via serial port...")
+                self.beamformer = serial.Serial(self.serial_port, self.baud_rate, timeout=self.timeout)
+            elif self.tcp_host and self.tcp_port:
+                print("Connecting to Beamformer via TCP...")
+                self.beamformer = serial.serial_for_url(f"socket://{self.tcp_host}:{self.tcp_port}",
+                                                        baudrate=self.baud_rate, timeout=self.timeout)
+            else:
+                raise ValueError("Either serial_port or tcp_host and tcp_port must be provided.")
+
             time.sleep(2.5)
             print("Beamformer connected!")
-        except serial.SerialException as e:
-            print(f"Error connecting to {self.serial_port}: {e}")
+        except (serial.SerialException, ValueError) as e:
+            print(f"Error connecting to Beamformer: {e}")
             self.beamformer = None
 
     def disconnect(self):
         if self.beamformer:
+            print("Disconnecting from Beamformer...")
             self.beamformer.close()
-            print("Beamformer connection closed.")
+            self.beamformer = None
+            print("Beamformer disconnected!")
+        else:
+            print("No active connection to disconnect.")
 
     def check_connection(self):
         if not self.beamformer or not self.beamformer.is_open:
@@ -139,4 +153,10 @@ class BeamformerAPI:
         if not self.check_connection():
             return "Error, not connected"
         cmd_temp = f"set_2d_beam({beamID}, {d_m}, {num_x}, {num_y}, {freq_MHz}, {elevation_angle}, {azimuth_angle})"
+        return self.beamformer_write(cmd_temp, sleep_time=0.1)
+
+    def set_element_phase(self, beamID, elementID, phase_shift):
+        if not self.check_connection():
+            return "Error, not connected"
+        cmd_temp = f"set_element_phase({beamID}, {elementID}, {phase_shift})"
         return self.beamformer_write(cmd_temp, sleep_time=0.1)

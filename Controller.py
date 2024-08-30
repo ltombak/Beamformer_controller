@@ -3,6 +3,14 @@ import time
 
 
 def main():
+    # Example usage for serial connection
+    beamformer_serial = BeamformerAPI(serial_port='COM10')
+    beamformer_serial.connect()
+
+    # Example usage for TCP connection
+    beamformer_tcp = BeamformerAPI(tcp_host='192.168.50.10', tcp_port=2000)
+    beamformer_tcp.connect()
+
     # Initialize the Beamformer API
     beamformer = BeamformerAPI(serial_port='COM3', baud_rate=115200)
 
@@ -30,8 +38,8 @@ def main():
     num_x = 2
     num_y = 4
     frequency = 1575
-    elevation = 10
-    azimuth = 0
+    elevation = 20
+    azimuth = 220
 
     print("Set 2D Beam")
     beamformer.set_2d_beam(beam_id,distance,num_x,num_y, frequency, elevation, azimuth)

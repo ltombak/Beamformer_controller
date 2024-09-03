@@ -40,10 +40,10 @@ def main():
     beamformer.connect()
 
     # Initialization
-    beamformer.beamformer_set_num_boards(1)
+    beamformer.beamformer_set_num_boards(2)
     beamformer.beamformer_init()
 
-    beams_enumeration = [[1]](https: // sebhastian.com / modulenotfounderror - no - module - named - serial /)
+    beams_enumeration = [4,4,8]
     beamformer.beamformer_set_beams_enumeration(beams_enumeration)
     beamformer.beamformer_beams_init()
     time.sleep(1)

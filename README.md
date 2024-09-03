@@ -173,4 +173,4 @@ __LED_demo_board(boardID)__
 Blink the LED on a specified board (index start at 0).
 
 ## License
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the GNU License - see the LICENSE file for details.

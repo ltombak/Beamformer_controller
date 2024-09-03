@@ -22,8 +22,9 @@ pip install pyserial
 To use the Beamformer API, you need to create an instance of the BeamformerAPI class and connect to your device. The Controller.py file demonstrates how to use the API for both serial and TCP connections.
 
 ```python
-from beamformer_api import BeamformerAPI
+from code.beamformer_api import BeamformerAPI
 import time
+
 
 def main():
     # Example usage for serial connection
@@ -42,7 +43,7 @@ def main():
     beamformer.beamformer_set_num_boards(1)
     beamformer.beamformer_init()
 
-    beams_enumeration = [[1]](https://sebhastian.com/modulenotfounderror-no-module-named-serial/)
+    beams_enumeration = [[1]](https: // sebhastian.com / modulenotfounderror - no - module - named - serial /)
     beamformer.beamformer_set_beams_enumeration(beams_enumeration)
     beamformer.beamformer_beams_init()
     time.sleep(1)
@@ -70,6 +71,7 @@ def main():
 
     # Close the connection when done
     beamformer.disconnect()
+
 
 if __name__ == "__main__":
     main()

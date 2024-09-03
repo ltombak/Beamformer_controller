@@ -7,7 +7,6 @@ This repository contains a Python script for controlling a custom beamformer dev
 - [Installation](#installation)
 - [Usage](#usage)
 - [API Methods](#api-methods)
-- [Examples](#examples)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -21,8 +20,6 @@ pip install pyserial
 
 ## Usage
 To use the Beamformer API, you need to create an instance of the BeamformerAPI class and connect to your device. The Controller.py file demonstrates how to use the API for both serial and TCP connections.
-
-### Example Usage
 
 ```python
 from beamformer_api import BeamformerAPI
@@ -85,15 +82,14 @@ __BeamformerAPI__
 ____init__(self, serial_port=None, baud_rate=115200, timeout=2, read_timeout=1, tcp_host=None, tcp_port=None)__
 
 Initializes the BeamformerAPI instance.
-
 Parameters:
 
-    serial_port: The serial port to connect to (e.g., 'COM3').
-    baud_rate: The baud rate for the connection (default is 115200).
-    timeout: Timeout for the connection (default is 2 seconds).
-    read_timeout: Timeout for reading data (default is 1 second).
-    tcp_host: Host for TCP connection (if applicable, example: 192.168.50.50).
-    tcp_port: Port for TCP connection (if applicable, example: 2000).
+    serial_port         The serial port to connect to (e.g., 'COM3').
+    baud_rate           The baud rate for the connection (default is 115200).
+    timeout             Timeout for the connection (default is 2 seconds).
+    read_timeout        Timeout for reading data (default is 1 second).
+    tcp_host            Host for TCP connection (if applicable, example: 192.168.50.10).
+    tcp_port            Port for TCP connection (if applicable, example: 2000).
 
 __connect()__
 
@@ -108,9 +104,11 @@ __check_connection()__
 Checks if the connection to the beamformer is active.
 
 __beamformer_init()__
+
 Initialize the beamformer (to be performed after changing the number of boards).
 
 __beamformer_beams_init()__
+
 Initialize the beam configuration (to be performed after changing the beam configuration).
 
 __beamformer_write(command, include_newline=True, sleep_time=0.050)__
@@ -118,17 +116,20 @@ __beamformer_write(command, include_newline=True, sleep_time=0.050)__
 Sends a command to the beamformer and returns the response.
 Parameters:
 
-    command: The command to send.
-    include_newline: Whether to append a newline character to the command.
-    sleep_time: Delay to wait for incoming data.
+    command             The command to send.
+    include_newline     Whether to append a newline character to the command.
+    sleep_time          Delay to wait for incoming data.
 
 __beamformer_set_num_boards(num_boards_to_set)__
+
 Command to set the hardware: set the connected number of boards in the beamformer.
 
 __beamformer_get_num_boards()__
+
 Get command: print the actual configured number of boards in the beamformer.
 
 __beamformer_set_beams_enumeration(beams_enumeration)__
+
 Command to set the hardware: set the beams configuration. Example: beamformer_set_beams_enumeration(4,4,8,8) will set 4 beams: 
     
     beam 0 : 4 elements, CH1-4 of first board
@@ -137,12 +138,15 @@ Command to set the hardware: set the beams configuration. Example: beamformer_se
     beam 3 : 8 elements, CH1-8 of third board
 
 __beamformer_get_beams_enumeration()__
+
 Get command: print the actual configuration of beams.
 
 __set_1d_beam(beamID, d_mm, freq_MHz, angle_deg)__
+
 Configure a specified beam (*beamID*) to do linear beamforming at specified frequency (*freq_MHz*) and elevation angle in degree (*angle_deg*). The inter-element distance has to be set (with *d_mm*).
 
 __set_2d_beam(beamID, d_mm, num_x, num_y, freq_MHz, elevation_angle, azimuth_angle)__
+
 Configure a specified beam to do 2D (elevation/azimuth) beamforming.
 Parameters to specify:
 
@@ -155,6 +159,7 @@ Parameters to specify:
     azimuth_angle       azimuth angle in degree
 
 __set_element_phase(beamID, elementID, phase_shift)__
+
 Configure a specified element to a choosen phase.
 Parameters to specify:
 
@@ -164,10 +169,8 @@ Parameters to specify:
 
 
 __LED_demo_board(boardID)__
-Blink the LED on a specified board (index start at 0).
 
-## Example usage
-An example usage is provided in *Controller.py*
+Blink the LED on a specified board (index start at 0).
 
 ## License
 This project is licensed under the MIT License - see the LICENSE file for details.

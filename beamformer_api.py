@@ -143,15 +143,16 @@ class BeamformerAPI:
             return "Error"
         return response
 
-    def set_beam(self, beamID, d_mm, freq_MHz, angle_deg):
+    def set_1d_beam(self, beamID, d_mm, freq_MHz, angle_deg):
         if not self.check_connection():
             return "Error, not connected"
         cmd_temp = f"configureBeam({beamID}, {d_mm}, {freq_MHz}, {angle_deg})"
         return self.beamformer_write(cmd_temp, sleep_time=0.1)
 
-    def set_2d_beam(self, beamID, d_m, num_x, num_y, freq_MHz, elevation_angle, azimuth_angle):
+    def set_2d_beam(self, beamID, d_mm, num_x, num_y, freq_MHz, elevation_angle, azimuth_angle):
         if not self.check_connection():
             return "Error, not connected"
+        d_m = d_mm/1000
         cmd_temp = f"set_2d_beam({beamID}, {d_m}, {num_x}, {num_y}, {freq_MHz}, {elevation_angle}, {azimuth_angle})"
         return self.beamformer_write(cmd_temp, sleep_time=0.1)
 

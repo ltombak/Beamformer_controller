@@ -103,6 +103,17 @@ class BeamformerAPI:
             return "Error"
         return response
 
+
+
+    def beamformer_set_update(self):
+        if not self.check_connection():
+            return "Error, not connected"
+        response = self.beamformer_write("set_beamformer_update")
+        if "Error" in response:
+            print("Something went wrong, please check connection.")
+            return "Error"
+        return response
+
     def beamformer_init(self):
         if not self.check_connection():
             return "Error, not connected"

@@ -1,6 +1,7 @@
 # Beamformer API
 
-This repository contains a Python script for controlling a custom beamformer device via serial or TCP connections. The script is composed of two files: `beamformer_api.py` (the API) and a controller that utilizes this API.
+This repository contains multiple a Python scripts for controlling a custom beamformer device via serial or TCP connections. The script `beamformer_api.py` is the API to call methods from, the script `Controller.py` shows a basic usage of the API and how to connect and send commands to the beamformer. The script `beamforming_example.py` shows how to connect and use the beamforming capabilities of the beamformer.
+
 
 ## Table of Contents
 
@@ -20,7 +21,7 @@ pip install numpy
 ```
 
 ## Usage
-To use the Beamformer API, you need to create an instance of the BeamformerAPI class and connect to your device. The Controller.py file demonstrates how to use the API for both serial and TCP connections.
+To use the Beamformer API, you need to create an instance of the BeamformerAPI class and connect to your device. The `Controller.py` file demonstrates how to use the API for both serial and TCP connections:
 
 ```python
 from beamformer_api import BeamformerAPI
@@ -71,7 +72,7 @@ if __name__ == "__main__":
 
 __BeamformerAPI__
 
-____init__(self, serial_port=None, baud_rate=115200, timeout=2, read_timeout=1, tcp_host=None, tcp_port=None)__
+____init__(serial_port=None, baud_rate=115200, timeout=2, read_timeout=1, tcp_host=None, tcp_port=None)__
 
 Initializes the BeamformerAPI instance.
 Parameters:

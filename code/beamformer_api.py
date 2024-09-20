@@ -1,5 +1,25 @@
 import serial
 import time
+import numpy as np
+
+
+def phase_shift_compute(num_col, num_row, d, f, theta, phi):
+    c = 3e8  # Speed of light in m/s
+    phase_shifts = np.zeros((num_row * num_col))  # Initialize an array
+    theta_rad = np.deg2rad(theta)
+    phi_rad = np.deg2rad(phi)
+
+    element_index = 0
+    # Compute the phase shift for the parameters
+    for i in range(num_row):
+        for j in range(num_col):
+            phase_shifts[element_index] = 2 * np.pi * d * f / c * (
+                    np.sin(theta_rad) * np.cos(phi_rad) * i + np.sin(theta_rad) * np.sin(phi_rad) * j)
+            element_index = element_index + 1
+
+    # Convert phase shifts to degrees
+    phase_shifts = np.rad2deg(phase_shifts)
+    return phase_shifts
 
 
 class BeamformerAPI:
@@ -75,10 +95,10 @@ class BeamformerAPI:
         else:
             return "Error"
 
-    def LED_demo_board(self, board_id):
+    def LED_demo_board(self, board_index):
         if not self.check_connection():
             return "Error, not connected"
-        cmd_temp = f"LED_demo_board({board_id})"
+        cmd_temp = f"LED_demo_board({board_index})"
         return self.beamformer_write(cmd_temp, sleep_time=1)
 
     def beamformer_get_num_boards(self):
@@ -102,8 +122,6 @@ class BeamformerAPI:
             print("Invalid number of boards. Please enter a number between 1 and 8.")
             return "Error"
         return response
-
-
 
     def beamformer_set_update(self):
         if not self.check_connection():
@@ -144,7 +162,6 @@ class BeamformerAPI:
         cmd_temp = f"configureBeamSizes({', '.join(beams_enumeration_str)})"
         return self.beamformer_write(cmd_temp)
 
-
     def beamformer_beams_init(self):
         if not self.check_connection():
             return "Error, not connected"
@@ -154,21 +171,46 @@ class BeamformerAPI:
             return "Error"
         return response
 
-    def set_1d_beam(self, beamID, d_mm, freq_MHz, angle_deg):
+    def set_1d_beam(self, beam_index, d_mm, freq_MHz, angle_deg):
         if not self.check_connection():
             return "Error, not connected"
-        cmd_temp = f"configureBeam({beamID}, {d_mm}, {freq_MHz}, {angle_deg})"
+        cmd_temp = f"configureBeam({beam_index}, {d_mm}, {freq_MHz}, {angle_deg})"
         return self.beamformer_write(cmd_temp, sleep_time=0.1)
 
-    def set_2d_beam(self, beamID, d_mm, num_x, num_y, freq_MHz, elevation_angle, azimuth_angle):
+    # Do not use, for now there are some inversion error in the beamformer firmware, instead use 'set_beam_planar_array'
+    def set_2d_beam(self, beam_index, d_mm, num_x, num_y, freq_MHz, elevation_angle, azimuth_angle):
         if not self.check_connection():
             return "Error, not connected"
-        d_m = d_mm/1000
-        cmd_temp = f"set_2d_beam({beamID}, {d_m}, {num_x}, {num_y}, {freq_MHz}, {elevation_angle}, {azimuth_angle})"
+        d_m = d_mm / 1000
+        cmd_temp = f"set_2d_beam({beam_index}, {d_m}, {num_x}, {num_y}, {freq_MHz}, {elevation_angle}, {azimuth_angle})"
         return self.beamformer_write(cmd_temp, sleep_time=0.1)
 
-    def set_element_phase(self, beamID, elementID, phase_shift):
+    def set_element_phase(self, beam_index, element_index, phase_shift):
         if not self.check_connection():
             return "Error, not connected"
-        cmd_temp = f"set_element_phase({beamID}, {elementID}, {phase_shift})"
+        cmd_temp = f"set_element_phase({beam_index}, {element_index}, {phase_shift})"
         return self.beamformer_write(cmd_temp, sleep_time=0.1)
+
+    """
+    @brief Configures the phase shift for a planar array of beamforming elements.
+    @param beams_enumeration A list of integers, where each integer represents the number of elements in each beam for the beamformer.
+    @param beam_index Index of the beam for which the phase shifts are to be configured.
+    @param num_x Number of elements in the x-direction of the planar array.
+    @param num_y Number of elements in the y-direction of the planar array.
+    @param pitch Spacing between the elements of the planar array in meters (m).
+    @param frequency Operating frequency of the beamformer in Hertz (Hz).
+    @param theta Elevation angle in degrees. 0 degrees represents the zenith (directly overhead).
+    @param phi Azimuth angle in degrees. 0 degrees typically points to where the array is initially directed (e.g., North).
+    
+    @return A string 'Done' when the configuration is completed successfully.
+    """
+
+    def set_beam_planar_array(self, beams_enumeration, beam_index, num_x, num_y, pitch, frequency, theta, phi):
+        d = pitch
+        f = frequency
+        phase_shift_list = phase_shift_compute(num_x, num_y, d, f, theta, phi)
+        for i in range(beams_enumeration[beam_index]):
+            self.set_element_phase(beam_index, i, phase_shift_list[i])
+
+        self.beamformer_set_update()
+        return 'Done'

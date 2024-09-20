@@ -12,59 +12,48 @@ This repository contains a Python script for controlling a custom beamformer dev
 
 ## Installation
 
-To use the Beamformer API, ensure you have Python installed on your system. You will also need the `pyserial` library. You can install it using pip:
+To use the Beamformer API, ensure you have Python installed on your system. You will also need the `pyserial` and `numpy` library. You can install it using pip:
 
 ```bash
 pip install pyserial
+pip install numpy
 ```
 
 ## Usage
 To use the Beamformer API, you need to create an instance of the BeamformerAPI class and connect to your device. The Controller.py file demonstrates how to use the API for both serial and TCP connections.
 
 ```python
-from code.beamformer_api import BeamformerAPI
+from beamformer_api import BeamformerAPI
 import time
 
 
 def main():
-    # Example usage for serial connection
-    beamformer_serial = BeamformerAPI(serial_port='COM10')
-    beamformer_serial.connect()
-
-    # Example usage for TCP connection
-    beamformer_tcp = BeamformerAPI(tcp_host='192.168.50.10', tcp_port=2000)
-    beamformer_tcp.connect()
-
     # Initialize the Beamformer API
     beamformer = BeamformerAPI(serial_port='COM3', baud_rate=115200)
+    # beamformer_tcp = BeamformerAPI(tcp_host='192.168.50.10', tcp_port=2000)
+
+    # Connect to the Beamformer
     beamformer.connect()
 
     # Initialization
-    beamformer.beamformer_set_num_boards(2)
+    beamformer.beamformer_set_num_boards(2)  # Set the hardware(how many stacks are connected)
     beamformer.beamformer_init()
 
-    beams_enumeration = [4,4,8]
+    # Set the firmware: number of elements per beams and, de facto, number of beams. In this case: 3 beams.
+    beams_enumeration = [4, 4, 8]
     beamformer.beamformer_set_beams_enumeration(beams_enumeration)
     beamformer.beamformer_beams_init()
     time.sleep(1)
 
-    # TESTING
-    print("TESTING: LEDs ON 1s")
-    beamformer.beamformer_write("LED_on", sleep_time=0.1)
-    time.sleep(1)
-    beamformer.beamformer_write("LED_off", sleep_time=0.1)
-    time.sleep(1)
+    # Communicate with the beamformer
+    # Commands from the beamformer can be sent directly with the method 'beamformer_write()'
+    beamformer.beamformer_write("help", sleep_time=0.25)
+    beamformer.beamformer_write("info", sleep_time=0.25)
 
-    beam_id = 0
-    distance = 0.102
-    num_x = 2
-    num_y = 4
-    frequency = 1575
-    elevation = 20
-    azimuth = 220
-
-    print("Set 2D Beam")
-    beamformer.set_2d_beam(beam_id, distance, num_x, num_y, frequency, elevation, azimuth)
+    # Testing the LEDs
+    print("TESTING: LEDs")
+    # Blink the LEDs sequentially of board 0 (top stack)
+    beamformer.LED_demo_board(0)
 
     # Get the actual configuration of the beamformer (bits on each channel)
     print(beamformer.beamformer_write("get_beamformer", sleep_time=0.25))
@@ -75,6 +64,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 ```
 
 ## API Methods
@@ -132,47 +122,50 @@ Get command: print the actual configured number of boards in the beamformer.
 
 __beamformer_set_beams_enumeration(beams_enumeration)__
 
-Command to set the hardware: set the beams configuration. Example: beamformer_set_beams_enumeration(4,4,8,8) will set 4 beams: 
+Command to set the hardware: set the beams configuration. Example: beamformer_set_beams_enumeration(4,4,8,16) will set 4 beams: 
     
     beam 0 : 4 elements, CH1-4 of first board
     beam 1 : 4 elements, CH5-8 of first board
     beam 2 : 8 elements, CH1-8 of second board
-    beam 3 : 8 elements, CH1-8 of third board
+    beam 3 : 16 elements, CH1-8 of third board and CH1-8 of fourth board
+
+board 0 is in the top stack.
 
 __beamformer_get_beams_enumeration()__
 
 Get command: print the actual configuration of beams.
 
-__set_1d_beam(beamID, d_mm, freq_MHz, angle_deg)__
+__set_1d_beam(beam_index, d_mm, freq_MHz, angle_deg)__
 
-Configure a specified beam (*beamID*) to do linear beamforming at specified frequency (*freq_MHz*) and elevation angle in degree (*angle_deg*). The inter-element distance has to be set (with *d_mm*).
+Configure a specified beam (*beam_index*) to do linear beamforming at specified frequency (*freq_MHz*) and elevation angle in degree (*angle_deg*). The inter-element distance has to be set (with *d_mm*).
 
-__set_2d_beam(beamID, d_mm, num_x, num_y, freq_MHz, elevation_angle, azimuth_angle)__
+__set_beam_planar_array(beams_enumeration, beam_index, num_x, num_y, pitch, frequency, theta, phi)__
 
-Configure a specified beam to do 2D (elevation/azimuth) beamforming.
+Configure a specified beam to do 2D (elevation/azimuth) beamforming for a planar array.
 Parameters to specify:
 
-    beamID              beam identification number
-    d_mm                inter-element spacing
+    beams_enumeration   beam_enumeration variable to be passed
+    beam_index          beam identification number
     num_x               number of columns
     num_y               number of rows
-    freq_MHz            frequency (MHz)
-    elevation_angle     elevation angle in degree
-    azimuth_angle       azimuth angle in degree
+    pitch               inter-element spacing
+    frequency           frequency (Hz, can be written 1575e6 for example)
+    theta               elevation angle in degree
+    phi                 azimuth angle in degree
 
-__set_element_phase(beamID, elementID, phase_shift)__
+__set_element_phase(beam_index, element_index, phase_shift)__
 
-Configure a specified element to a choosen phase.
+Configure a specified element to a chosen phase.
 Parameters to specify:
 
-    beamID              beam identification number
-    elementID           element identification number
+    beam_index          beam identification number
+    element_index       element identification number
     phase_shift         phase shift to apply in degree
 
 
-__LED_demo_board(boardID)__
+__LED_demo_board(board_index)__
 
-Blink the LED on a specified board (index start at 0).
+Blink the LEDs on a specified board (index start at 0).
 
 ## License
 This project is licensed under the GNU License - see the LICENSE file for details.
